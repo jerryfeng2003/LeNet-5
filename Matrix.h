@@ -88,6 +88,7 @@ public:
             }
         }
     }
+    //广播加法
     void MatrixAdd(const Matrix &A, double val)
     {
         for(int i = 0; i< A.mat.size(); i++){
