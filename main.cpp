@@ -46,5 +46,30 @@ int main() {
     cout << "Convolution Result:" << endl;
     conv_result.MatrixPrint(conv_result);
 
+    //池化层
+    Matrix pool_result(2, 2);
+
+    //调用矩阵池化函数
+    pool_result.Matrix::MatrixPool(A, pool_result, 2 , 1);
+
+    //打印池化结果
+    cout << "Pooling Result:" << endl;
+    pool_result.MatrixPrint(pool_result);
+
+    //标量相乘
+    pool_result.MatrixMul(pool_result, 1.2);
+
+    //打印标量相乘结果
+    cout << "Scalar Multiplication Result:" << endl;
+    pool_result.MatrixPrint(pool_result);
+
+    //广播操作
+    Matrix broadcast_result(3, 3);
+    broadcast_result.MatrixAdd(A,  22);
+
+    //打印广播操作结果
+    cout << "Broadcast Result:" << endl;
+    broadcast_result.MatrixPrint(broadcast_result);
+
     return 0;
 }
