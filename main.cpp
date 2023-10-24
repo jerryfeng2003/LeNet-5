@@ -8,9 +8,9 @@ int main() {
 
     // 打印矩阵 A 和 B
     cout << "Matrix A:" << endl;
-    A.MatrixPrint(A);
+    A.MatrixPrint();
     cout << "Matrix B:" << endl;
-    B.MatrixPrint(B);
+    B.MatrixPrint();
 
     // 创建一个结果矩阵 add
     Matrix add(3, 3);
@@ -20,7 +20,7 @@ int main() {
 
     // 打印矩阵 add
     cout << "Matrix A + B:" << endl;
-    add.MatrixPrint(add);
+    add.MatrixPrint();
 
     //创建一个乘法矩阵
     Matrix C(3, 3);
@@ -30,7 +30,7 @@ int main() {
 
     //打印矩阵C
     cout << "Matrix A * B:" << endl;
-    C.MatrixPrint(C);
+    C.MatrixPrint();
 
     // 创建一个结果矩阵 conv_result
     Matrix conv_result(2, 2);
@@ -44,7 +44,7 @@ int main() {
 
     // 打印卷积结果
     cout << "Convolution Result:" << endl;
-    conv_result.MatrixPrint(conv_result);
+    conv_result.MatrixPrint();
 
     //池化层
     Matrix pool_result(2, 2);
@@ -54,14 +54,14 @@ int main() {
 
     //打印池化结果
     cout << "Pooling Result:" << endl;
-    pool_result.MatrixPrint(pool_result);
+    pool_result.MatrixPrint();
 
     //标量相乘
     pool_result.MatrixMul(pool_result, 1.2);
 
     //打印标量相乘结果
     cout << "Scalar Multiplication Result:" << endl;
-    pool_result.MatrixPrint(pool_result);
+    pool_result.MatrixPrint();
 
     //广播操作
     Matrix broadcast_result(3, 3);
@@ -69,7 +69,11 @@ int main() {
 
     //打印广播操作结果
     cout << "Broadcast Result:" << endl;
-    broadcast_result.MatrixPrint(broadcast_result);
+    broadcast_result.MatrixPrint();
+
+    //Gaussian initual
+    A.Gaussian_init();
+    A.MatrixPrint();
 
     return 0;
 }
