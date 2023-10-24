@@ -49,12 +49,6 @@ cmake_ninja_workdir = C$:/Users/Hyper/CLionProjects/LeNet-5/cmake-build-debug/
 
 build cmake_object_order_depends_target_LeNet_5: phony || CMakeFiles/LeNet_5.dir
 
-build CMakeFiles/LeNet_5.dir/Matrix.cpp.obj: CXX_COMPILER__LeNet_5_unscanned_Debug C$:/Users/Hyper/CLionProjects/LeNet-5/Matrix.cpp || cmake_object_order_depends_target_LeNet_5
-  DEP_FILE = CMakeFiles\LeNet_5.dir\Matrix.cpp.obj.d
-  FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
-  OBJECT_DIR = CMakeFiles\LeNet_5.dir
-  OBJECT_FILE_DIR = CMakeFiles\LeNet_5.dir
-
 build CMakeFiles/LeNet_5.dir/main.cpp.obj: CXX_COMPILER__LeNet_5_unscanned_Debug C$:/Users/Hyper/CLionProjects/LeNet-5/main.cpp || cmake_object_order_depends_target_LeNet_5
   DEP_FILE = CMakeFiles\LeNet_5.dir\main.cpp.obj.d
   FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
@@ -69,7 +63,7 @@ build CMakeFiles/LeNet_5.dir/main.cpp.obj: CXX_COMPILER__LeNet_5_unscanned_Debug
 #############################################
 # Link the executable LeNet_5.exe
 
-build LeNet_5.exe: CXX_EXECUTABLE_LINKER__LeNet_5_Debug CMakeFiles/LeNet_5.dir/Matrix.cpp.obj CMakeFiles/LeNet_5.dir/main.cpp.obj
+build LeNet_5.exe: CXX_EXECUTABLE_LINKER__LeNet_5_Debug CMakeFiles/LeNet_5.dir/main.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\LeNet_5.dir
