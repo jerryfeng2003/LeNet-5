@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Matrix.h"
+#include "Linear.h"
 
 int main()
 {
@@ -16,7 +17,7 @@ int main()
     // 创建一个结果矩阵 add
 
     // 调用矩阵加法函数
-    Matrix add=A.MatrixAdd(B);
+    Matrix add = A.MatrixAdd(B);
 
     // 打印矩阵 add
     cout << "Matrix A + B:" << endl;
@@ -25,7 +26,7 @@ int main()
     // 创建一个乘法矩阵
 
     // 调用矩阵乘法函数
-    Matrix C=A.MatrixMul(B);
+    Matrix C = A.MatrixMul(B);
 
     // 打印矩阵C
     cout << "Matrix A * B:" << endl;
@@ -48,14 +49,14 @@ int main()
     // 池化层
 
     // 调用矩阵池化函数
-    Matrix pool_result=A.MatrixPool(2, 1);
+    Matrix pool_result = A.MatrixPool(2, 1);
 
     // 打印池化结果
     cout << "Pooling Result:" << endl;
     pool_result.MatrixPrint();
 
     // 标量相乘
-    pool_result=pool_result.MatrixMul(1.2);
+    pool_result = pool_result.MatrixMul(1.2);
 
     // 打印标量相乘结果
     cout << "Scalar Multiplication Result:" << endl;
@@ -63,7 +64,7 @@ int main()
 
     // 广播操作
     Matrix broadcast_result(3, 3);
-    broadcast_result=broadcast_result.MatrixAdd(22);
+    broadcast_result = broadcast_result.MatrixAdd(22);
 
     // 打印广播操作结果
     cout << "Broadcast Result:" << endl;
@@ -71,6 +72,14 @@ int main()
 
     // Gaussian initual
     A.Gaussian_init();
+    A.MatrixPrint();
+
+    cout << endl;
+    A.Flatten();
+    A.MatrixPrint();
+
+    cout <<A.row<<"\t"<<A.col<< endl;
+    A = Softmax(A);
     A.MatrixPrint();
 
     return 0;

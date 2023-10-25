@@ -1,11 +1,13 @@
 //
 // Created by Hyper on 23/10/2023.
-//
+// Modify by Jerry on 25/10/2023.
 
 #ifndef LENET_5_MATRIX_H
 #define LENET_5_MATRIX_H
 #include <iostream>
 #include <vector>
+#include <algorithm>
+#include <functional>
 #include <cmath>
 #include <random>
 
@@ -20,6 +22,7 @@ normal_distribution<double> distr(0.0, 1.0);
 
 typedef vector<vector<float>> Mat;
 using namespace std;
+
 class Matrix
 {
 public:
@@ -33,27 +36,24 @@ public:
     Matrix(size_t row, size_t col) : row(row), col(col)
     {
         if (row <= 0 || col <= 0)
-            cout << "row or col is illegal" << endl;
+            cout << "row or col is illegal" << endl, exit(-1);
         mat.resize(row); // 设置行数
         for (int i = 0; i < row; ++i)
         {
             mat[i].resize(col); // 设置列数
         }
     }
-    // 赋值构造函数
-    Matrix(size_t row, size_t col, double val) : row(row), col(col)
+    Matrix(size_t row, size_t col, bool Guass) : row(row), col(col)
     {
         if (row <= 0 || col <= 0)
-            cout << "row or col is illegal" << endl;
+            cout << "row or col is illegal" << endl, exit(-1);
         mat.resize(row); // 设置行数
         for (int i = 0; i < row; ++i)
         {
             mat[i].resize(col); // 设置列数
-            for (int j = 0; j < col; ++j)
-            {
-                mat[i][j] = val;
-            }
         }
+        if (Guass)
+            Gaussian_init();
     }
 
     Matrix(const Matrix &a)
@@ -61,12 +61,45 @@ public:
         mat.resize(a.row);
         for (int i = 0; i < mat.size(); ++i)
         {
-            mat[i].resize(a.col); // 设置列数
+            mat[i].resize(a.row); // 设置列数
             for (int j = 0; j < a.col; j++)
             {
                 mat[i][j] = a.mat[i][j];
             }
         }
+    }
+
+    void resize(size_t n, size_t m)
+    {
+        if (n * m != row * col)
+            cout << "row and col is illegal" << endl, exit(-1);
+        vector<float> temp(n * m);
+        auto i_temp = temp.begin();
+        for (int i = 0; i < row; i++)
+        {
+            for (int j = 0; j < col; j++)
+            {
+                *i_temp = mat[i][j];
+                i_temp++;
+            }
+        }
+        row = n, col = m;
+        i_temp = temp.begin();
+        mat.resize(row);
+        for (int i = 0; i < row; ++i)
+        {
+            mat[i].resize(col);
+            for (int j = 0; j < col; ++j)
+            {
+                mat[i][j] = *i_temp;
+                i_temp++;
+            }
+        }
+    }
+
+    void Flatten()
+    {
+        resize(1, row * col);
     }
 
     // Initial the value through Gaussian distribution
@@ -120,7 +153,7 @@ public:
         return sum;
     }
     // 打印矩阵
-    void MatrixPrint()
+    virtual void MatrixPrint()
     {
         for (int i = 0; i < row; i++)
         {
@@ -178,14 +211,14 @@ public:
 Matrix Matrix::conv2d(const Mat &A, const Mat &kernel)
 {
     if (kernel.size() > A.size() || kernel[0].size() > A[0].size())
-        cout << "kernel size is illegal" << endl;
+        cout << "kernel size is illegal" << endl, exit(-1);
     int row = A.size();
     int col = A[0].size();
     int kernel_row = kernel.size();
     int kernel_col = kernel[0].size();
     int out_row = row - kernel_row + 1; // 输出矩阵的行列数
     int out_col = col - kernel_col + 1; // 输出矩阵的行列数
-    Matrix out(out_row, out_col, 0);
+    Matrix out(out_row, out_col);
     for (int i = 0; i < out_row; i++)
     {
         for (int j = 0; j < out_col; j++)
@@ -205,7 +238,7 @@ Matrix Matrix::conv2d(const Mat &A, const Mat &kernel)
 Matrix Matrix::MatrixAdd(const Matrix &B)
 {
     if (row != B.row || col != B.col)
-        cout << "MatrixAdd: Matrix size is not equal" << endl;
+        cout << "MatrixAdd: Matrix size is not equal" << endl, exit(-1);
     Matrix add(row, col);
     for (int i = 0; i < row; ++i)
     {
@@ -234,7 +267,7 @@ Matrix Matrix::MatrixAdd(double val)
 Matrix Matrix::MatrixMinus(const Matrix &B)
 {
     if (row != B.row || col != B.col)
-        cout << "MatrixAdd: Matrix size is not equal" << endl;
+        cout << "MatrixAdd: Matrix size is not equal" << endl, exit(-1);
     Matrix R(row, col);
     for (int i = 0; i < row; ++i)
     {
@@ -249,7 +282,7 @@ Matrix Matrix::MatrixMinus(const Matrix &B)
 Matrix Matrix::MatrixMul(const Matrix &B)
 {
     if (row != B.row || col != B.col)
-        cout << "MatrixAdd: Matrix size is not equal" << endl;
+        cout << "MatrixAdd: Matrix size is not equal" << endl, exit(-1);
     Matrix mul(row, col);
     int col = B.mat[0].size();
     int mid = mat[0].size();
@@ -285,7 +318,7 @@ Matrix Matrix::MatrixMul(double val)
 Matrix Matrix::MatrixDotMul(const Matrix &B)
 {
     if (row != B.row || col != B.col)
-        cout << "MatrixAdd: Matrix size is not equal" << endl;
+        cout << "MatrixAdd: Matrix size is not equal" << endl, exit(-1);
     Matrix R(row, col);
     R.mat.resize(row); // 设置行数
     for (int i = 0; i < row; ++i)
@@ -321,6 +354,54 @@ Matrix Matrix::MatrixPool(int pool_size, int stride)
         }
     }
     return R;
+}
+
+double Cross_entropy(const Matrix &y, const Matrix &t)
+{
+    if (y.row != 1 || t.row != 1)
+        cout << "Not a vector!" << endl, exit(-1);
+    if (y.row != t.row)
+        cout << "The two vector dosen't fit!" << endl, exit(-1);
+    double loss = 0.;
+    size_t m = y.col;
+    for (auto i = 0; i < m; ++i)
+        loss += -y.mat[0][i] * std::log(t.mat[0][i]);
+    return loss;
+}
+
+float relu(float x)
+{
+    return x ? 0 : x > 0;
+}
+
+Matrix Softmax(const Matrix &x)
+{
+    if (x.row != 1)
+        cout << "Not a vector!" << endl, exit(-1);
+    Matrix temp(1,x.col);
+    double sum = 0;
+    for (int i = 0; i < x.col; i++)
+    {
+        sum += exp(x.mat[0][i]);
+    }
+    for (int i = 0; i < x.col; i++)
+    {
+        temp.mat[0][i] = exp(x.mat[0][i]) / sum;
+    }
+    return temp;
+}
+
+Matrix Relu(const Matrix &x)
+{
+    if (x.row != 1)
+        cout << "Not a vector!" << endl, exit(-1);
+    Matrix temp(1,x.col);
+    for_each(temp.mat[0].begin(), temp.mat[0].end(), relu);
+    return temp;
+}
+
+Matrix d_Cross_entrophy(const Matrix &y, const Matrix &t)
+{
 }
 
 #endif // LENET_5_MATRIX_H
