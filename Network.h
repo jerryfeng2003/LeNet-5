@@ -17,6 +17,7 @@ vector<Matrix> Der_Conv1_Core;  //卷积层1的卷积核的导数   5*5@6
 vector<double> Der_Conv1_Bias;  //卷积层1的偏置的导数    6*1
 vector<Matrix> Conv1_Delta;     //卷积层1的误差项
 
+const int C3_num[16] = {3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 6};
 const bool C3_connect[16][6] =
         {
                 {true, true, true, false, false, false},
@@ -36,12 +37,12 @@ const bool C3_connect[16][6] =
                 {true, false, true, true, false, true},
                 {true, true, true, true, true, true}
         };
-vector<vector<Matrix>> Conv3_Core;      //卷积层3的卷积核  5*5@16;
+vector<vector<Matrix>> Conv3_Core;      //卷积层3的卷积核  16@[6*3, 9*4, 1*6]@5*5;
 vector<double> Conv3_Bias;              //卷积层3的偏置   16*1
-vector<vector<Matrix>> Conv3_Output;    //卷积层3的输出   16*10*10
-vector<vector<Matrix>> Der_Conv3_Core;  //卷积层3的卷积核的导数   5*5@16
+vector<Matrix> Conv3_Output;            //卷积层3的输出   16@10*10
+vector<vector<Matrix>> Der_Conv3_Core;  //卷积层3的卷积核的导数   16@[6*3, 9*4, 1*6]@5*5;
 vector<double> Der_Conv3_Bias;          //卷积层3的偏置的导数    16*1
-vector<vector<Matrix>> Conv3_Delta;     //卷积层3的误差项
+vector<Matrix> Conv3_Delta;             //卷积层3的误差项  16@10*10
 
 vector<vector<Matrix>> Conv5_Core;      //卷积层5的卷积核  5*5@120;
 vector<double> Conv5_Bias;              //卷积层5的偏置   120*1
