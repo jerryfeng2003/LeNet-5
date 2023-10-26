@@ -17,6 +17,14 @@ vector<Matrix> Der_Conv1_Core;  //卷积层1的卷积核的导数   5*5@6
 vector<double> Der_Conv1_Bias;  //卷积层1的偏置的导数    6*1
 vector<Matrix> Conv1_Delta;     //卷积层1的误差项
 
+vector<double> SubSamp2_Params; //池化层2的参数  6@1*1
+vector<double> SubSamp2_Bias;   //池化层2的偏置  6@1
+vector<Matrix> SubSamp2_Active; //池化层2的激活值  6@14*14
+vector<Matrix> SubSamp2_Output; //池化层2的输出  6@14*14
+vector<double> Der_SubSamp2_Params; //池化层2的参数的导数  6@1*1
+vector<double> Der_SubSamp2_Bias;   //池化层2的偏置的导数  6@1
+vector<Matrix> SubSamp2_Delta;      //池化层2的误差项
+
 const int C3_num[16] = {3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 6};
 const bool C3_connect[16][6] =
         {
@@ -44,9 +52,17 @@ vector<vector<Matrix>> Der_Conv3_Core;  //卷积层3的卷积核的导数   16@[
 vector<double> Der_Conv3_Bias;          //卷积层3的偏置的导数    16*1
 vector<Matrix> Conv3_Delta;             //卷积层3的误差项  16@10*10
 
+vector<double> SubSamp4_Params; //池化层4的参数  16@1*1
+vector<double> SubSamp4_Bias;   //池化层4的偏置  16@1
+vector<Matrix> SubSamp4_Active; //池化层4的激活值  16@5*5
+vector<Matrix> SubSamp4_Output; //池化层4的输出  16@5*5
+vector<double> Der_SubSamp4_Params; //池化层4的参数的导数  16@1*1
+vector<double> Der_SubSamp4_Bias;   //池化层4的偏置的导数  16@1
+vector<Matrix> SubSamp4_Delta;      //池化层4的误差项
+
 vector<vector<Matrix>> Conv5_Core;      //卷积层5的卷积核  5*5@120;
 vector<double> Conv5_Bias;              //卷积层5的偏置   120*1
-vector<vector<Matrix>> Conv5_Output;    //卷积层5的输出   120*1*1
+Matrix Conv5_Output;                    //卷积层5的输出   120*1*1
 vector<vector<Matrix>> Der_Conv5_Core;  //卷积层5的卷积核的导数   5*5@120
 vector<double> Der_Conv5_Bias;          //卷积层5的偏置的导数    120*1
 vector<vector<Matrix>> Conv5_Delta;     //卷积层5的误差项
@@ -65,6 +81,7 @@ Matrix Der_OUTPUT_Weight;               //输出层的权重的导数  10*84
 Matrix Der_OUTPUT_Bias;                 //输出层的偏置的导数  10*1
 Matrix OUTPUT_Delta;                    //输出层的误差项
 
+int GetLabel(const Point &point);               //获取标签
 void Network_init(void);                        //初始化网络
 void ForwardPropagation(const Point& point);    //前向传播
 void BackPropagation(const Point& point);       //反向传播
