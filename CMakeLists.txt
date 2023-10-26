@@ -6,7 +6,9 @@ set(CMAKE_CXX_STANDARD 14)
 add_executable(LeNet_5
         Matrix.h
         main.cpp
-        DataInput.h)
+        DataInput.h
+        Network.cpp
+        Network.h)
 
 #下面的OpenCV是用来显示图片的
 set(OpenCV_DIR E:/OpenCV/opencv/MinGW-build/install)

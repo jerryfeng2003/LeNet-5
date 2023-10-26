@@ -10,123 +10,68 @@
 #include <fstream>
 #include <vector>
 
+#define INPUT_HEIGHT 32
+#define INPUT_WIDTH  32//输入图片的长宽
+#define MNISI_HEIGHT 28
+#define MNISI_WIDTH  28//MNIST图片的长宽
+#define PADDING_SIZE 2//填充大小
+#define OUTPUT_SIZE 10//输出大小
+#define TRAIN_NUM 3000//训练集大小
+#define TEST_NUM  100//测试集大小
 using namespace std;
 
-//反转int
-int ReverseInt(int i)
-{
-    unsigned char *split = (unsigned char *) &i;
-    return (int) split[0] << 24 | (int) split[1] << 16 | (int) split[2] << 8 | (int) split[3];
-}
-
-class Imagedatas
-{
-public:
-    vector<Matrix> train_data;
-    vector<Matrix> train_label;
-    vector<Matrix> test_data;
-    vector<Matrix> test_label;
-
-    int train_image_num;
-    int train_label_num;
-    int test_image_num;
-    int test_label_num;
-
-    void read_image_datas(bool train)
+struct Point
+        {
+    Matrix image;
+    Matrix label;
+    Point() { ; }
+    Point(const char * image, uint8_t num )
     {
-        FILE *fp = NULL;
-        int errNum = 0;
-        if(train)
-            fp = fopen("C:\\Users\\Hyper\\CLionProjects\\LeNet-5\\train-images.idx3-ubyte", "rb");
-        else
-            fp = fopen("t10k-images.idx3-ubyte", "rb");
-
-        if(fp == NULL)
+        this->image = Matrix(INPUT_HEIGHT, INPUT_WIDTH);
+        for(int i = 0; i < INPUT_HEIGHT; i++)
         {
-            errNum = errno;
-            cout << "open fail errno = "<<errNum<<endl;
-            cout << "open train-images.idx3-ubyte failed!" << endl;
-            exit(-1);
-        }
-
-        int rubbish;
-        int num_of_images;
-        int num_of_rows;
-        int num_of_cols;
-        //清除垃圾值
-        fread(&rubbish, sizeof(int), 1, fp);
-
-        //读取图片数量
-        fread(&num_of_images, sizeof(int), 1, fp);
-        num_of_images = ReverseInt(num_of_images);
-        //读取行数
-        fread(&num_of_rows, sizeof(int), 1, fp);
-        num_of_rows = ReverseInt(num_of_rows);
-        //读取列数
-        fread(&num_of_cols, sizeof(int), 1, fp);
-        num_of_cols = ReverseInt(num_of_cols);
-        //获取第i张图片
-        int i, r, c;
-
-        for(i = 0; i < num_of_images; ++i)
-        {
-            Matrix temp(num_of_rows, num_of_cols);
-            for(r = 0; r < num_of_rows; ++r)
+            for(int j = 0; j < INPUT_WIDTH; j++)
             {
-                for(c = 0; c < num_of_cols; ++c)
-                {
-                    unsigned char temp_pixel = 0;
-                    fread(&temp_pixel, sizeof(unsigned char), 1, fp);
-                    temp.mat[0][r * 28 + c] = (float) temp_pixel / 255;
-                }
+                this->image.mat[i+PADDING_SIZE][j+PADDING_SIZE] =(uint8_t) image[i*MNISI_HEIGHT+j];
             }
-            if(train)
-                train_data.push_back(temp);
-            else
-                test_data.push_back(temp);
         }
-        fclose(fp);
-    }
-
-    void read_label_datas(bool train)
-    {
-        FILE *fp = NULL;
-        if(train)
-            fp = fopen("train-labels.idx1-ubyte", "rb");
-        else
-            fp = fopen("t10k-labels.idx1-ubyte", "rb");
-
-        if(fp == NULL)
-        {
-            cout << "open train-labels.idx1-ubyte failed!" << endl;
-            exit(-1);
-        }
-
-        int rubbish;
-        int num_of_label;
-        //清除垃圾值
-        fread(&rubbish, sizeof(int), 1, fp);
-
-        //读取图片数量
-        fread(&num_of_label, sizeof(int), 1, fp);
-        num_of_label = ReverseInt(num_of_label);
-        //获取第i个标签
-        int i;
-
-        for(i = 0; i < num_of_label; ++i)
-        {
-            Matrix temp(10, 1);
-            unsigned char temp_label = 0;
-            fread(&temp_label, sizeof(unsigned char), 1, fp);
-            temp.mat[0][temp_label] = 1;
-            if(train)
-                train_label.push_back(temp);
-            else
-                test_label.push_back(temp);
-        }
-        fclose(fp);
+        this->label = Matrix(OUTPUT_SIZE, 1);
+        label.mat[num][0] = 1;
     }
 };
 
+inline void ReadData(vector<Point>&Train, vector<Point>&Test)
+{
+    char rubbish[16];//不用的数据，包括图片数量，图片长宽等
+    ifstream train_image("./Datas/train-images.idx3-ubyte", ios::binary | ios::in );
+    ifstream train_label("./Datas/train-labels.idx1-ubyte", ios::binary | ios::in);
+
+    train_image.read(rubbish, 16);
+    train_label.read(rubbish, 8);
+
+    for(int i = 0; i < TRAIN_NUM; i++)
+    {
+        char image[MNISI_HEIGHT*MNISI_WIDTH];
+        uint8_t num;
+        train_image.read(image, MNISI_HEIGHT*MNISI_WIDTH);
+        train_label.read((char*)&num, 1);//标签的字节数为1
+        Train.push_back(Point(image, num));
+    }
+
+    ifstream test_image("./Datas/t10k-images.idx3-ubyte", ios::binary | ios::in );
+    ifstream test_label("./Datas/t10k-labels.idx1-ubyte", ios::binary | ios::in );
+
+    test_image.read(rubbish, 16);
+    test_label.read(rubbish, 8);
+
+    for(int i = 0; i < TEST_NUM; i++)
+    {
+        char image[MNISI_HEIGHT*MNISI_WIDTH];
+        uint8_t num;
+        test_image.read(image, MNISI_HEIGHT*MNISI_WIDTH);
+        test_label.read((char*)&num, 1);//标签的字节数为1
+        Test.push_back(Point(image, num));
+    }
+}
 
 #endif //LENET_5_DATAINPUT_H

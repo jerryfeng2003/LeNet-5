@@ -11,11 +11,6 @@
 #include <cmath>
 #include <random>
 
-// 矩阵的类实现
-/*
- *函数：
- */
-
 using namespace std;
 default_random_engine gen(114514 * time(0));
 normal_distribution<double> distr(0.0, 1.0);
