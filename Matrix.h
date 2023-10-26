@@ -199,7 +199,7 @@ public:
     }
     Matrix operator*(double val)
     {
-        return MatrixMinus(val);
+        return MatrixMul(val);
     }
     Matrix operator^(const Matrix &B)
     {
@@ -356,6 +356,7 @@ Matrix Matrix::MatrixPool(int pool_size, int stride)
     return R;
 }
 
+//交叉熵损失函数
 double Cross_entropy(const Matrix &y, const Matrix &t)
 {
     if (y.row != 1 || t.row != 1)
@@ -365,7 +366,7 @@ double Cross_entropy(const Matrix &y, const Matrix &t)
     double loss = 0.;
     size_t m = y.col;
     for (auto i = 0; i < m; ++i)
-        loss += -y.mat[0][i] * std::log(t.mat[0][i]);
+        loss += -t.mat[0][i] * log(y.mat[0][i]) - (1 - t.mat[0][i]) * log(1 - y.mat[0][i]);
     return loss;
 }
 
@@ -400,8 +401,19 @@ Matrix Relu(const Matrix &x)
     return temp;
 }
 
+//交叉熵损失函数对输出层的求导
 Matrix d_Cross_entrophy(const Matrix &y, const Matrix &t)
 {
+    if (y.row != 1 || t.row != 1)
+        cout << "Not a vector!" << endl, exit(-1);
+    if (y.row != t.row)
+        cout << "The two vector dosen't fit!" << endl, exit(-1);
+    Matrix temp(1,y.col);
+    for (int i = 0; i < y.col; i++)
+    {
+        temp.mat[0][i] = -t.mat[0][i] / y.mat[0][i] + (1 - t.mat[0][i]) / (1 - y.mat[0][i]);
+    }
+    return temp;
 }
 
 #endif // LENET_5_MATRIX_H
