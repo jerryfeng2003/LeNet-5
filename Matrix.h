@@ -446,7 +446,16 @@ double d_Cross_entrophy(const Matrix &y, const Matrix &t)
         temp.mat[0][i] = -t.mat[0][i] / y.mat[0][i] + (1 - t.mat[0][i]) / (1 - y.mat[0][i]);
     }
     loss = temp.MatrixSum();
-    return double;
+    return loss;
 }
 
+bool ReshapeMat(Mat &A, size_t row, size_t col)
+{
+    if (row <= 0 || col <= 0)
+        throw "reshapeMatrix: row <= 0 || col <= 0";
+    A.resize(row);
+    for (int i = 0; i < row; i++)
+        A[i].resize(col);
+    return true;
+}
 #endif // LENET_5_MATRIX_H
