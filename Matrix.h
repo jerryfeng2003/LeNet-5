@@ -11,11 +11,6 @@
 #include <cmath>
 #include <random>
 
-// 矩阵的类实现
-/*
- *函数：
- */
-
 using namespace std;
 default_random_engine gen(114514 * time(0));
 normal_distribution<double> distr(0.0, 1.0);
@@ -54,6 +49,14 @@ public:
         }
         if (Guass)
             Gaussian_init();
+        else
+            for(auto i = mat.begin(); i != mat.end(); i++)
+            {
+                for(auto j = i->begin(); j != i->end(); j++)
+                {
+                    *j = 0;
+                }
+            }
     }
 
     Matrix(const Matrix &a)
@@ -176,6 +179,7 @@ public:
     Matrix MatrixMul(double val);
     Matrix MatrixDotMul(const Matrix &B);
     Matrix MatrixPool(int pool_size, int stride);
+    Matrix MatrixPool(size_t height, size_t width);
 
     Matrix operator+(const Matrix &B)
     {
@@ -199,13 +203,40 @@ public:
     }
     Matrix operator*(double val)
     {
-        return MatrixMinus(val);
+        return MatrixMul(val);
     }
     Matrix operator^(const Matrix &B)
     {
         return MatrixDotMul(B);
     }
 };
+
+// 矩阵均匀池化
+Matrix Matrix:: MatrixPool(const size_t height, const size_t width)
+{
+    if(mat.size() % height != 0 || mat[0].size() % width != 0)
+        cout << "src size is illegal" << endl, exit(-1);
+    Matrix res = Matrix(mat.size() / height, mat[0].size() / width);
+    for(int i = 0; i < res.row; i++)
+    {
+        for(int j = 0; j < res.col; j++)
+        {
+            res.mat[i][j] = 0;
+            int row_b = i * height;//起始行
+            int col_b = j * width;//起始列
+            int row_e = row_b + height;//结束行
+            int col_e = col_b + width;//结束列
+            for(int m = row_b; m < row_e; m++)
+            {
+                for(int n = col_b; n < col_e; n++)
+                {
+                    res.mat[i][j] += mat[m][n];
+                }
+            }
+        }
+    }
+    return res;
+}
 
 // 矩阵二维卷积
 Matrix Matrix::conv2d(const Mat &A, const Mat &kernel)
@@ -356,6 +387,7 @@ Matrix Matrix::MatrixPool(int pool_size, int stride)
     return R;
 }
 
+//交叉熵损失函数
 double Cross_entropy(const Matrix &y, const Matrix &t)
 {
     if (y.row != 1 || t.row != 1)
@@ -365,7 +397,7 @@ double Cross_entropy(const Matrix &y, const Matrix &t)
     double loss = 0.;
     size_t m = y.col;
     for (auto i = 0; i < m; ++i)
-        loss += -y.mat[0][i] * std::log(t.mat[0][i]);
+        loss += -t.mat[0][i] * log(y.mat[0][i]) - (1 - t.mat[0][i]) * log(1 - y.mat[0][i]);
     return loss;
 }
 
@@ -400,8 +432,21 @@ Matrix Relu(const Matrix &x)
     return temp;
 }
 
-Matrix d_Cross_entrophy(const Matrix &y, const Matrix &t)
+//交叉熵损失函数对输出层的求导
+double d_Cross_entrophy(const Matrix &y, const Matrix &t)
 {
+    double loss;
+    if (y.row != 1 || t.row != 1)
+        cout << "Not a vector!" << endl, exit(-1);
+    if (y.row != t.row)
+        cout << "The two vector dosen't fit!" << endl, exit(-1);
+    Matrix temp(1,y.col);
+    for (int i = 0; i < y.col; i++)
+    {
+        temp.mat[0][i] = -t.mat[0][i] / y.mat[0][i] + (1 - t.mat[0][i]) / (1 - y.mat[0][i]);
+    }
+    loss = temp.MatrixSum();
+    return double;
 }
 
 #endif // LENET_5_MATRIX_H

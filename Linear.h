@@ -34,6 +34,20 @@ public:
         hid_layer = Relu(hid_layer_w * in_layer + hid_layer_b);
         out_layer = Softmax(out_layer_w * hid_layer + out_layer_b);
     }
+
+    void backward(Matrix &x, const Matrix &y)
+    {
+        Matrix out_layer_d = out_layer - y;
+        out_layer_dw = out_layer_d * hid_layer.MatrixTranspose();
+        out_layer_db = out_layer_d;
+        Matrix hid_layer_d = out_layer_w.MatrixTranspose() * out_layer_d;
+        hid_layer_dw = hid_layer_d * in_layer.MatrixTranspose();
+        hid_layer_db = hid_layer_d;
+        Matrix in_layer_d = hid_layer_w.MatrixTranspose() * hid_layer_d;
+        in_layer_dw = in_layer_d * x.MatrixTranspose();
+        in_layer_db = in_layer_d;
+    }
 };
 
 #endif
+
