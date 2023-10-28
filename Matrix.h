@@ -50,9 +50,9 @@ public:
         if (Guass)
             Gaussian_init();
         else
-            for(auto i = mat.begin(); i != mat.end(); i++)
+            for (auto i = mat.begin(); i != mat.end(); i++)
             {
-                for(auto j = i->begin(); j != i->end(); j++)
+                for (auto j = i->begin(); j != i->end(); j++)
                 {
                     *j = 0;
                 }
@@ -116,6 +116,18 @@ public:
             }
         }
     }
+
+    void fill_zeros()
+    {
+        for (auto i = mat.begin(); i != mat.end(); i++)
+        {
+            for (auto j = i->begin(); j != i->end(); j++)
+            {
+                *j = 0;
+            }
+        }
+    }
+    
     // 矩阵转置
     Matrix MatrixTranspose()
     {
@@ -212,23 +224,23 @@ public:
 };
 
 // 矩阵均匀池化
-Matrix Matrix:: MatrixPool(const size_t height, const size_t width)
+Matrix Matrix::MatrixPool(const size_t height, const size_t width)
 {
-    if(mat.size() % height != 0 || mat[0].size() % width != 0)
+    if (mat.size() % height != 0 || mat[0].size() % width != 0)
         cout << "src size is illegal" << endl, exit(-1);
     Matrix res = Matrix(mat.size() / height, mat[0].size() / width);
-    for(int i = 0; i < res.row; i++)
+    for (int i = 0; i < res.row; i++)
     {
-        for(int j = 0; j < res.col; j++)
+        for (int j = 0; j < res.col; j++)
         {
             res.mat[i][j] = 0;
-            int row_b = i * height;//起始行
-            int col_b = j * width;//起始列
-            int row_e = row_b + height;//结束行
-            int col_e = col_b + width;//结束列
-            for(int m = row_b; m < row_e; m++)
+            int row_b = i * height;     // 起始行
+            int col_b = j * width;      // 起始列
+            int row_e = row_b + height; // 结束行
+            int col_e = col_b + width;  // 结束列
+            for (int m = row_b; m < row_e; m++)
             {
-                for(int n = col_b; n < col_e; n++)
+                for (int n = col_b; n < col_e; n++)
                 {
                     res.mat[i][j] += mat[m][n];
                 }
@@ -387,17 +399,16 @@ Matrix Matrix::MatrixPool(int pool_size, int stride)
     return R;
 }
 
-//交叉熵损失函数
 double Cross_entropy(const Matrix &y, const Matrix &t)
 {
-    if (y.row != 1 || t.row != 1)
+    if (y.col != 1 || t.col != 1)
         cout << "Not a vector!" << endl, exit(-1);
     if (y.row != t.row)
         cout << "The two vector dosen't fit!" << endl, exit(-1);
     double loss = 0.;
     size_t m = y.col;
     for (auto i = 0; i < m; ++i)
-        loss += -t.mat[0][i] * log(y.mat[0][i]) - (1 - t.mat[0][i]) * log(1 - y.mat[0][i]);
+        loss += -t.mat[0][i] * log(y.mat[0][i]);
     return loss;
 }
 
@@ -408,42 +419,54 @@ float relu(float x)
 
 Matrix Softmax(const Matrix &x)
 {
-    if (x.row != 1)
+    if (x.col != 1)
         cout << "Not a vector!" << endl, exit(-1);
-    Matrix temp(1,x.col);
+    Matrix temp(x.row, 1);
     double sum = 0;
-    for (int i = 0; i < x.col; i++)
+    for (int i = 0; i < x.row; i++)
     {
-        sum += exp(x.mat[0][i]);
+        sum += exp(x.mat[i][0]);
     }
-    for (int i = 0; i < x.col; i++)
+    for (int i = 0; i < x.row; i++)
     {
-        temp.mat[0][i] = exp(x.mat[0][i]) / sum;
+        temp.mat[i][0] = exp(x.mat[i][0]) / sum;
+    }
+    return temp;
+}
+
+Matrix Softmax(const Matrix &x, float sum)
+{
+    if (x.col != 1)
+        cout << "Not a vector!" << endl, exit(-1);
+    Matrix temp(x.row, 1);
+    for (int i = 0; i < x.row; i++)
+    {
+        temp.mat[i][0] = exp(x.mat[i][0]) / sum;
     }
     return temp;
 }
 
 Matrix Relu(const Matrix &x)
 {
-    if (x.row != 1)
-        cout << "Not a vector!" << endl, exit(-1);
-    Matrix temp(1,x.col);
-    for_each(temp.mat[0].begin(), temp.mat[0].end(), relu);
+    Matrix temp(x.row, x.col);
+    temp = x;
+    for (int i = 0; i < x.row; i++)
+        for_each(temp.mat[i].begin(), temp.mat[i].end(), relu);
     return temp;
 }
 
-//交叉熵损失函数对输出层的求导
+// 交叉熵损失函数对输出层的求导
 double d_Cross_entrophy(const Matrix &y, const Matrix &t)
 {
     double loss;
-    if (y.row != 1 || t.row != 1)
+    if (y.col != 1 || t.col != 1)
         cout << "Not a vector!" << endl, exit(-1);
     if (y.row != t.row)
         cout << "The two vector dosen't fit!" << endl, exit(-1);
-    Matrix temp(1,y.col);
-    for (int i = 0; i < y.col; i++)
+    Matrix temp(y.row, 1);
+    for (int i = 0; i < y.row; i++)
     {
-        temp.mat[0][i] = -t.mat[0][i] / y.mat[0][i] + (1 - t.mat[0][i]) / (1 - y.mat[0][i]);
+        temp.mat[i][0] = -t.mat[i][0] / y.mat[i][0] + (1 - t.mat[i][0]) / (1 - y.mat[i][0]);
     }
     loss = temp.MatrixSum();
     return loss;
