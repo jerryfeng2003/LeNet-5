@@ -22,13 +22,15 @@ class Matrix
 {
 public:
     Mat mat;
-    size_t row, col;
+    int row, col;
     // 构造函数
-    Matrix() : row(1), col(1)
+    Matrix()
     {
-        mat[0][0] = 0;
     }
-    Matrix(size_t row, size_t col) : row(row), col(col)
+    ~Matrix()
+    {
+    }
+    Matrix(int row, int col) : row(row), col(col)
     {
         if (row <= 0 || col <= 0)
             cout << "row or col is illegal" << endl, exit(-1);
@@ -38,7 +40,7 @@ public:
             mat[i].resize(col); // 设置列数
         }
     }
-    Matrix(size_t row, size_t col, bool Guass) : row(row), col(col)
+    Matrix(int row, int col, bool Guass) : row(row), col(col)
     {
         if (row <= 0 || col <= 0)
             cout << "row or col is illegal" << endl, exit(-1);
@@ -72,7 +74,7 @@ public:
         }
     }
 
-    void resize(size_t n, size_t m)
+    void resize(int n, int m)
     {
         if (n * m != row * col)
             cout << "row and col is illegal" << endl, exit(-1);
@@ -127,7 +129,7 @@ public:
             }
         }
     }
-    
+
     // 矩阵转置
     Matrix MatrixTranspose()
     {
@@ -324,12 +326,11 @@ Matrix Matrix::MatrixMinus(const Matrix &B)
 // 矩阵间乘法
 Matrix Matrix::MatrixMul(const Matrix &B)
 {
-    if (row != B.row || col != B.col)
-        cout << "MatrixAdd: Matrix size is not equal" << endl, exit(-1);
-    Matrix mul(row, col);
+    if (col != B.row)
+        cout << "MatrixMul: Matrix size is not fit" << endl, exit(-1);
+    Matrix mul(row, B.col);
     int col = B.mat[0].size();
     int mid = mat[0].size();
-    mul.mat.resize(row); // 设置行数
     for (int i = 0; i < row; ++i)
     {
         mul.mat[i].resize(col); // 设置列数

@@ -9,7 +9,6 @@ void LeNet_5::Network_init()
     Conv1_Core.resize(6);
     Conv1_Bias.resize(6, 0);
     Conv1_Output.resize(6);
-    Conv1_Delta.resize(6);
     Der_Conv1_Core.resize(6);
     Der_Conv1_Bias.resize(6, 0);
 
@@ -17,7 +16,6 @@ void LeNet_5::Network_init()
     {
         Conv1_Core[i] = Matrix(5, 5, true);
         Conv1_Output[i] = Matrix(28, 28);
-        Conv1_Delta[i] = Matrix(28, 28);
         Der_Conv1_Core[i] = Matrix(5, 5);
     }
 
@@ -33,7 +31,6 @@ void LeNet_5::Network_init()
     SubSamp2_Active.resize(6);
     SubSamp2_Output.resize(6);
     SubSamp2_inside.resize(6);
-    SubSamp2_Delta.resize(6);
     Der_SubSamp2_Params.resize(6);
     Der_SubSamp2_Bias.resize(6, 0);
 
@@ -41,7 +38,6 @@ void LeNet_5::Network_init()
     Conv3_Core.resize(16);
     Conv3_Bias.resize(16, 0);
     Conv3_Output.resize(16);
-    Conv3_Delta.resize(16);
     Der_Conv3_Core.resize(16);
     Der_Conv3_Bias.resize(16, 0);
 
@@ -49,7 +45,7 @@ void LeNet_5::Network_init()
     {
         Conv3_Core[i].resize(6);
         Der_Conv3_Core[i].resize(6);
-        Conv1_Output[i] = Matrix(5, 5);
+        Conv3_Output[i] = Matrix(5, 5);
         for (int j = 0; j < 6; j++)
         {
             if (C3_connect[i][j])
@@ -72,7 +68,6 @@ void LeNet_5::Network_init()
     SubSamp4_Active.resize(16);
     SubSamp4_Output.resize(16);
     SubSamp4_inside.resize(16);
-    SubSamp4_Delta.resize(16);
     Der_SubSamp4_Params.resize(16);
     Der_SubSamp4_Bias.resize(16, 0);
 
@@ -80,7 +75,6 @@ void LeNet_5::Network_init()
     Conv5_Core.resize(120);
     Conv5_Bias.resize(120, 0);
     Conv5_Output = Matrix(120, 1, 0);
-    Conv5_Delta.resize(120);
     Der_Conv5_Core.resize(120);
     Der_Conv5_Bias.resize(120, 0);
 
@@ -100,7 +94,6 @@ void LeNet_5::Network_init()
     Full6_Bias = Matrix(84, 1, 0);
     Full6_Output = Matrix(84, 1);
     FUll6_inside = Matrix(84, 1);
-    Full6_Delta = Matrix(84, 1);
     Der_Full6_Weight = Matrix(84, 120);
     Der_Full6_Bias = Matrix(84, 1, 0);
 
@@ -167,11 +160,11 @@ void LeNet_5::ForwardPropagation(const Point &point)
     }
 
     // 全连接层6
-    FUll6_inside = Conv5_Output * Full6_Weight + Full6_Bias;
+    FUll6_inside = (Full6_Weight * Conv5_Output) + Full6_Bias;
     Full6_Output = Relu(FUll6_inside);
 
     // 输出层
-    OUTPUT_inside = Full6_Output * OUTPUT_Weight + OUTPUT_Bias;
+    OUTPUT_inside = OUTPUT_Weight * Full6_Output + OUTPUT_Bias;
     Exp_output.resize(OUTPUT_inside.row);
     for (int i = 0; i < OUTPUT_inside.row; i++)
     {
@@ -194,12 +187,11 @@ int LeNet_5::GetLabel(const Point &point)
 
 void LeNet_5::BackPropagation(const Point &point)
 {
-    Matrix Label = point.label;
-    float Loss = Cross_entropy(OUTPUT_Output, Label);
+    float Loss = Cross_entropy(OUTPUT_Output, point.label);
     float Exp_sum = accumulate(Exp_output.begin(), Exp_output.end(), 0.0);
-    for (int i = 0; i < Label.row; i++)
+    for (int i = 0; i < point.label.row; i++)
     {
-        Der_OUTPUT_Bias.mat[i][0] = (-Label.mat[i][0] / OUTPUT_Output.mat[i][0]) * (Exp_sum - Exp_output[i]) * Exp_output[i] / (pow(Exp_sum, 2));
+        Der_OUTPUT_Bias.mat[i][0] = (-point.label.mat[i][0] / OUTPUT_Output.mat[i][0]) * (Exp_sum - Exp_output[i]) * Exp_output[i] / (pow(Exp_sum, 2));
         for (int j = 0; j < Full6_Weight.col; j++)
         {
             Der_OUTPUT_Weight.mat[i][j] = Der_OUTPUT_Bias.mat[i][0] * OUTPUT_inside.mat[i][j];
@@ -208,9 +200,9 @@ void LeNet_5::BackPropagation(const Point &point)
 
     for (int j = 0; j < Full6_Output.row; j++)
     {
-        for (int i = 0; i < Label.row; i++)
+        for (int i = 0; i < point.label.row; i++)
         {
-            Der_Full6_Bias.mat[j][0] += Der_OUTPUT_Bias.mat[i][0] * OUTPUT_Weight.mat[i][j];
+            Der_Full6_Bias.mat[j][0] += OUTPUT_Weight.mat[i][j] * Der_OUTPUT_Bias.mat[i][0];
         }
         Der_Full6_Bias.mat[j][0] *= (FUll6_inside.mat[j][0] > 0);
         for (int k = 0; k < Conv5_Output.row; k++)
@@ -247,7 +239,7 @@ void LeNet_5::BackPropagation(const Point &point)
             {
                 if (SubSamp4_inside[j].mat[k][m] > 0)
                     sum++;
-                sum_x += SubSamp2_Active[j].mat[k][m];
+                sum_x += SubSamp4_Active[j].mat[k][m];
             }
         }
         for (int i = 0; i < Conv5_Output.row; i++)
@@ -269,9 +261,9 @@ void LeNet_5::BackPropagation(const Point &point)
                 {
                     for (int m = 0; m < 5; m++)
                     {
-                        for (int s = k; s < 14 - (5 - k); s++)
+                        for (int s = k; s <= 14 - (5 - k); s++)
                         {
-                            for (int t = m; t < 14 - (5 - m); t++)
+                            for (int t = m; t <= 14 - (5 - m); t++)
                             {
                                 Der_Conv3_Core[j][i].mat[k][m] += Der_Conv3_Bias[j] * SubSamp2_Output[i].mat[s][t] / 4;
                             }
@@ -326,11 +318,11 @@ void LeNet_5::BackPropagation(const Point &point)
         {
             for (int m = 0; m < 5; m++)
             {
-                for (int s = k; s < 32 - (5 - k); s++)
+                for (int s = k; s <= 32 - (5 - k); s++)
                 {
-                    for (int t = m; t < 32 - (5 - m); t++)
+                    for (int t = m; t <= 32 - (5 - m); t++)
                     {
-                        Der_Conv1_Core[j].mat[k][m] += Der_Conv1_Bias[j] * Input.mat[s][t] / 4;
+                        Der_Conv1_Core[j].mat[k][m] += Der_Conv1_Bias[j] * point.image.mat[s][t] / 4;
                     }
                 }
             }
@@ -396,7 +388,8 @@ void LeNet_5::Update_Weight(double rate)
     {
         for (int j = 0; j < Conv3_Core[0].size(); j++)
         {
-            Conv3_Core[i][j] = Conv3_Core[i][j] - (Der_Conv3_Core[i][j] + Conv3_Core[i][j] * lambda) * rate;
+            if(C3_connect[i][j])
+                Conv3_Core[i][j] = Conv3_Core[i][j] - (Der_Conv3_Core[i][j] + Conv3_Core[i][j] * lambda) * rate;
         }
         Conv3_Bias[i] -= rate * (Der_Conv3_Bias[i] + lambda * Conv3_Bias[i]);
     }
@@ -423,8 +416,6 @@ void LeNet_5::Update_Weight(double rate)
     OUTPUT_Bias = OUTPUT_Bias - (Der_OUTPUT_Bias + OUTPUT_Bias * lambda) * rate;
 }
 
-
 void Train(vector<Point> &Train)
 {
-    
 }
