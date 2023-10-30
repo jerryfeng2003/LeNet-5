@@ -86,16 +86,17 @@ public:
         vector<float> Exp_output;
         Matrix Der_OUTPUT_Weight; // 输出层的权重的导数  10*84
         Matrix Der_OUTPUT_Bias;   // 输出层的偏置的导数  10*1
+        double_t Loss;
 
-        int GetLabel(const Point &point);            // 获取标签
-        void Network_init();                         // 初始化网络
+        int GetLabel(const Point &point); // 获取标签
+        void Network_init();              // 初始化网络
+        void Network_check();
         void ForwardPropagation(const Point &point); // 前向传播
         void BackPropagation(const Point &point);    // 反向传播
         void Clear_Gradient();                       // 清空梯度
         void Update_Weight(double rate);             // 更新权重
-        void Check_Gradient(const Point &point);     // 检查梯度
-        void Train(vector<Point> &Train);            // 训练
-        void Test(vector<Point> &Test);              // 测试
+        void Train(float ln, int num);               // 训练
+        void Test(int num);                          // 测试
 };
 
 #endif // LENET_5_NETWORK_H

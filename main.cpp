@@ -8,13 +8,7 @@ using namespace std;
 
 int main()
 {
-    Point input(100,"./Datas/",0);
-    input.image.resize(32,32);
-    input.label.resize(10,1);
     LeNet_5 model;
-    model.ForwardPropagation(input);
-    model.BackPropagation(input);
-    model.Update_Weight(1e-2);
-    model.Clear_Gradient();
+    model.Train(1e-5, 10000);
     return 0;
 }

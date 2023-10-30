@@ -14,8 +14,9 @@
 using namespace std;
 default_random_engine gen(114514 * time(0));
 normal_distribution<double> distr(0.0, 1.0);
+const double Inf = 3.40282e+6;
 
-typedef vector<vector<float>> Mat;
+typedef vector<vector<double>> Mat;
 using namespace std;
 
 class Matrix
@@ -38,6 +39,8 @@ public:
         for (int i = 0; i < row; ++i)
         {
             mat[i].resize(col); // 设置列数
+            for (int j = 0; j < col; j++)
+                mat[i][j] = 0;
         }
     }
     Matrix(int row, int col, bool Guass) : row(row), col(col)
@@ -63,7 +66,7 @@ public:
 
     Matrix(const Matrix &a)
     {
-        row=a.row,col=a.col;
+        row = a.row, col = a.col;
         mat.resize(a.row);
         for (int i = 0; i < mat.size(); ++i)
         {
@@ -71,6 +74,39 @@ public:
             for (int j = 0; j < a.col; j++)
             {
                 mat[i][j] = a.mat[i][j];
+            }
+        }
+    }
+
+    void Normalise()
+    {
+        double mean = MatrixSum() / (row * col), variance = 0;
+        for (int i = 0; i < row; i++)
+        {
+            for (int j = 0; j < col; j++)
+            {
+                variance += pow(mat[i][j] - mean, 2);
+            }
+        }
+        variance = variance / (row * col);
+        double sq_var = sqrt(variance);
+        for (int i = 0; i < row; i++)
+        {
+            for (int j = 0; j < col; j++)
+            {
+                mat[i][j] = (mat[i][j] - mean) / sq_var;
+            }
+        }
+    }
+
+    void NAN_Gaussian_init()
+    {
+        for (auto i = mat.begin(); i != mat.end(); i++)
+        {
+            for (auto j = i->begin(); j != i->end(); j++)
+            {
+                if (isnan(*j) || isinf(abs(*j)))
+                    *j = distr(gen);
             }
         }
     }
@@ -106,6 +142,22 @@ public:
     void Flatten()
     {
         resize(1, row * col);
+    }
+
+    int find_vector_aumax()
+    {
+        if (col != 1)
+            cout << "Not a vector!\n"
+                 << endl,
+                exit(0);
+        int flag = 0;
+        float temp_max = 0;
+        for (int i = 0; i < row; i++)
+        {
+            if (mat[i][0] > temp_max)
+                flag = i, temp_max = mat[i][0];
+        }
+        return flag;
     }
 
     // Initial the value through Gaussian distribution
@@ -195,6 +247,7 @@ public:
     Matrix MatrixDotMul(const Matrix &B);
     Matrix MatrixPool(int pool_size, int stride);
     Matrix MatrixPool(size_t height, size_t width);
+    void ReshapeMat(size_t t_row, size_t t_col);
 
     Matrix operator+(const Matrix &B)
     {
@@ -254,7 +307,7 @@ Matrix Matrix::MatrixPool(const size_t height, const size_t width)
 }
 
 // 矩阵二维卷积
-Matrix Matrix::conv2d(const Mat &A, const Mat &kernel)
+Matrix conv2d(const Mat &A, const Mat &kernel)
 {
     if (kernel.size() > A.size() || kernel[0].size() > A[0].size())
         cout << "kernel size is illegal" << endl, exit(-1);
@@ -408,9 +461,11 @@ double Cross_entropy(const Matrix &y, const Matrix &t)
     if (y.row != t.row)
         cout << "The two vector dosen't fit!" << endl, exit(-1);
     double loss = 0.;
-    size_t m = y.col;
+    int m = y.row;
     for (auto i = 0; i < m; ++i)
-        loss += -t.mat[0][i] * log(y.mat[0][i]);
+        loss += -t.mat[i][0] * log(y.mat[i][0]);
+    if (isnan(loss) || isinf(loss))
+        loss = Inf * abs(distr(gen));
     return loss;
 }
 
@@ -441,9 +496,17 @@ Matrix Softmax(const Matrix &x, float sum)
     if (x.col != 1)
         cout << "Not a vector!" << endl, exit(-1);
     Matrix temp(x.row, 1);
+    int count = 0;
     for (int i = 0; i < x.row; i++)
     {
         temp.mat[i][0] = exp(x.mat[i][0]) / sum;
+        if (isinf(exp(x.mat[i][0])))
+            temp.mat[i][0] = 1, count++;
+    }
+    if (count != 0)
+    {
+        for (int i = 0; i < x.row; i++)
+            temp.mat[i][0] /= count;
     }
     return temp;
 }
@@ -474,13 +537,14 @@ double d_Cross_entrophy(const Matrix &y, const Matrix &t)
     return loss;
 }
 
-bool ReshapeMat(Mat &A, size_t row, size_t col)
+void Matrix::ReshapeMat(size_t t_row, size_t t_col)
 {
-    if (row <= 0 || col <= 0)
+    if (t_row <= 0 || t_col <= 0)
         throw "reshapeMatrix: row <= 0 || col <= 0";
-    A.resize(row);
+    row = t_row, col = t_col;
+    mat.resize(row);
     for (int i = 0; i < row; i++)
-        A[i].resize(col);
-    return true;
+        mat[i].resize(col);
 }
+
 #endif // LENET_5_MATRIX_H
