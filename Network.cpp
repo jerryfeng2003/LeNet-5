@@ -192,7 +192,7 @@ void LeNet_5::BackPropagation(const Point &point)
     for (int i = 0; i < point.label.row; i++)
     {
         Der_OUTPUT_Bias.mat[i][0] = (-point.label.mat[i][0] / OUTPUT_Output.mat[i][0]) * (Exp_sum - Exp_output[i]) * Exp_output[i] / (pow(Exp_sum, 2));
-        for (int j = 0; j < Full6_Weight.col; j++)
+        for (int j = 0; j < OUTPUT_Weight.col; j++)
         {
             Der_OUTPUT_Weight.mat[i][j] = Der_OUTPUT_Bias.mat[i][0] * OUTPUT_inside.mat[i][j];
         }
@@ -388,7 +388,7 @@ void LeNet_5::Update_Weight(double rate)
     {
         for (int j = 0; j < Conv3_Core[0].size(); j++)
         {
-            if(C3_connect[i][j])
+            if (C3_connect[i][j])
                 Conv3_Core[i][j] = Conv3_Core[i][j] - (Der_Conv3_Core[i][j] + Conv3_Core[i][j] * lambda) * rate;
         }
         Conv3_Bias[i] -= rate * (Der_Conv3_Bias[i] + lambda * Conv3_Bias[i]);

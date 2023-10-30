@@ -63,6 +63,7 @@ public:
 
     Matrix(const Matrix &a)
     {
+        row=a.row,col=a.col;
         mat.resize(a.row);
         for (int i = 0; i < mat.size(); ++i)
         {
