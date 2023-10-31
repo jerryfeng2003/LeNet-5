@@ -16,7 +16,7 @@ default_random_engine gen(114514 * time(0));
 normal_distribution<double> distr(0.0, 1.0);
 const double Inf = 3.40282e+6;
 
-typedef vector<vector<double>> Mat;
+typedef vector<vector<float>> Mat;
 using namespace std;
 
 class Matrix
@@ -465,7 +465,7 @@ double Cross_entropy(const Matrix &y, const Matrix &t)
     for (auto i = 0; i < m; ++i)
         loss += -t.mat[i][0] * log(y.mat[i][0]);
     if (isnan(loss) || isinf(loss))
-        loss = Inf * abs(distr(gen));
+        loss = 0;
     return loss;
 }
 

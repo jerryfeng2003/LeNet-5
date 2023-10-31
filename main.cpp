@@ -9,6 +9,13 @@ using namespace std;
 int main()
 {
     LeNet_5 model;
-    model.Train(1e-5, 10000);
+    int epoch = 5;
+    for (int i = 0; i < epoch; i++)
+    {
+        cout << "Epoch " << i + 1 << " start!" << endl;
+        model.Train(1e-4, 10000);
+        model.Test(2000);
+        cout << endl;
+    }
     return 0;
 }

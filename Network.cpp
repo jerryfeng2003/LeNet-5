@@ -176,6 +176,7 @@ void LeNet_5::ForwardPropagation(const Point &point)
     for (int i = 0; i < 6; i++)
     {
         Conv1_Output[i] = conv2d(Input.mat, Conv1_Core[i].mat) + Conv1_Bias[i];
+        Conv1_Output[i].Normalise();
     }
     // 池化层2
     for (int i = 0; i < 6; i++)
@@ -197,6 +198,7 @@ void LeNet_5::ForwardPropagation(const Point &point)
             }
         }
         Conv3_Output[i] = Conv3_Output[i] + Conv3_Bias[i];
+        Conv3_Output[i].Normalise();
     }
 
     // 池化层4
@@ -222,9 +224,22 @@ void LeNet_5::ForwardPropagation(const Point &point)
     // 全连接层6
     FUll6_inside = (Full6_Weight * Conv5_Output) + Full6_Bias;
     Full6_Output = Relu(FUll6_inside);
+    Full6_Output.Normalise();
 
     // 输出层
     OUTPUT_inside = OUTPUT_Weight * Full6_Output + OUTPUT_Bias;
+    // OUTPUT_Output = OUTPUT_Weight * Full6_Output + OUTPUT_Bias;
+    OUTPUT_inside.Normalise();
+    // double temp = 0;
+    // for (int i = 0; i < OUTPUT_Output.row; i++)
+    // {
+    //     OUTPUT_Output.mat[i][0] *= OUTPUT_Output.mat[i][0];
+    //     temp+=OUTPUT_Output.mat[i][0];
+    // }
+    // OUTPUT_Output.MatrixPrint();
+    // OUTPUT_Output=OUTPUT_Output*(1/temp);
+    // OUTPUT_Output.MatrixPrint();
+    // cout<<endl;
     Exp_output.resize(OUTPUT_inside.row);
     for (int i = 0; i < OUTPUT_inside.row; i++)
     {
@@ -255,7 +270,6 @@ void LeNet_5::BackPropagation(const Point &point)
     // OUTPUT_inside.MatrixPrint();
     // for(int i=0;i<Exp_output.size();i++)
     //     cout<<Exp_output[i]<<endl;
-    // OUTPUT_Output.MatrixPrint();
     // OUTPUT_Weight.MatrixPrint();
     // cout<<endl;
     Loss = Cross_entropy(OUTPUT_Output, point.label);
@@ -265,9 +279,11 @@ void LeNet_5::BackPropagation(const Point &point)
     for (int i = 0; i < point.label.row; i++)
     {
         Der_OUTPUT_Bias.mat[i][0] = (-point.label.mat[i][0] / OUTPUT_Output.mat[i][0]) * (Exp_sum - Exp_output[i]) * Exp_output[i] / (pow(Exp_sum, 2));
+        // Der_OUTPUT_Bias.mat[i][0] = (-point.label.mat[i][0] / OUTPUT_Output.mat[i][0]);
         for (int j = 0; j < OUTPUT_Weight.col; j++)
         {
             Der_OUTPUT_Weight.mat[i][j] = Der_OUTPUT_Bias.mat[i][0] * OUTPUT_inside.mat[i][j];
+            // Der_OUTPUT_Weight.mat[i][j] = Der_OUTPUT_Bias.mat[i][0] * OUTPUT_Output.mat[i][j];
         }
     }
 
@@ -510,9 +526,9 @@ void LeNet_5::Train(float ln, int num)
         Update_Weight(ln);
         Clear_Gradient();
         Network_check();
-        if ((i + 1) % 1000 == 0)
+        if ((i + 1) % 2000 == 0)
         {
-            cout << "Epoch " << i + 1 << "/" << num << ": accuracy: " << right / finish * 100.00 << ", loss: " << sum_loss / finish << endl;
+            cout << "Numbers " << i + 1 << "/" << num << ": accuracy: " << right / finish * 100.00 << ", loss: " << sum_loss / finish << endl;
             finish = 0, sum_loss = 0, right = 0;
         }
     }
